@@ -128,7 +128,7 @@
           <div id="failureInfo" class="callout" style="margin-top:10px">指数分布：适合随机、恒定失效率的早期电子故障或偶发故障。支持零失效可靠度演示，默认 β=1。</div>
         </div>
         <div class="actions"><button class="primary" id="calculate">计算测试条件</button><button class="secondary" id="reset">恢复示例参数</button></div>
-        <div id="status" class="status">已完成计算：2026/11/19 20:51:38</div>
+        <div id="status" class="status">已完成计算：2026/11/19 20:55:52</div>
       </section>
 
       <aside>
@@ -144,7 +144,7 @@
         </section>
         <section class="card" style="margin-top:18px"><h2>计算说明</h2><div id="formula" class="formula">AF = (ΔT_test / ΔT_use)^q × exp[Ea/k × (1/Tmean_use − 1/Tmean_test)] × (f_test/f_use)
 AF = (125/50)^1.9 × Arrhenius × 频率比</div><div id="recommendation" class="callout" style="margin-top:12px">指数分布零失效近似下，90% 可靠度 / 90% 置信度：每个样本需承担 191,575.19 cycles 的等效使用暴露，已按 AF=23.318 折算到测试侧。</div></section>
-        <section class="card" style="margin-top:18px"><h2>结果记录</h2><div class="table-wrap"><table><thead><tr><th>时间</th><th>类型</th><th>AF</th><th>测试量</th></tr></thead><tbody id="history"><tr><td>2026/11/19 20:51:38</td><td><span class="pill">温度循环</span></td><td>23.318×</td><td>8,215.7 cycles</td></tr><tr><td>2026/11/19 20:34:21</td><td><span class="pill">温度循环</span></td><td>23.318×</td><td>8,215.7 cycles</td></tr></tbody></table></div><button class="secondary" id="clearHistory" style="margin-top:12px">清空记录</button></section>
+        <section class="card" style="margin-top:18px"><h2>结果记录</h2><div class="table-wrap"><table><thead><tr><th>时间</th><th>类型</th><th>AF</th><th>测试量</th></tr></thead><tbody id="history"><tr><td>2026/11/19 20:55:52</td><td><span class="pill">温度循环</span></td><td>23.318×</td><td>8,215.7 cycles</td></tr><tr><td>2026/11/19 20:51:38</td><td><span class="pill">温度循环</span></td><td>23.318×</td><td>8,215.7 cycles</td></tr><tr><td>2026/11/19 20:34:21</td><td><span class="pill">温度循环</span></td><td>23.318×</td><td>8,215.7 cycles</td></tr></tbody></table></div><button class="secondary" id="clearHistory" style="margin-top:12px">清空记录</button></section>
       </aside>
     </div>
     <footer>模型边界：Peck（高温高湿/交变湿热）、Arrhenius（高温/低温存储）、Coffin-Manson + Arrhenius（温度循环）。工具不会替代 IEC 60068、GB/T 2423 或产品专用规范。</footer>
@@ -276,7 +276,7 @@ AF = (125/50)^1.9 × Arrhenius × 频率比</div><div id="recommendation" class=
     $('calculate').addEventListener('click',calculate); $('reset').addEventListener('click',reset); $('clearHistory').addEventListener('click',()=>{localStorage.removeItem('env-test-history');renderHistory();});
     document.querySelectorAll('input,select').forEach(e=>e.addEventListener('change',()=>{ if(e.id==='failureMode') updateFailureInfo(); calculate(); }));
     setMode('tc'); renderHistory();
-    if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('/sw.js').catch(()=>{});
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
   </script>
 
 
