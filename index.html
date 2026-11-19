@@ -1,0 +1,283 @@
+<html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1769aa">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>环境测试条件换算工具</title>
+  <style>
+    :root { --ink:#17212b; --muted:#667481; --line:#dce4ea; --blue:#1769aa; --blue2:#e9f4fc; --green:#138a68; --amber:#a15c00; --bg:#f4f7fa; --card:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font:14px/1.55 "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .shell { max-width:1180px; margin:0 auto; padding:28px 18px 48px; }
+    header { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; margin-bottom:22px; }
+    h1 { margin:0 0 6px; font-size:30px; letter-spacing:-.02em; }
+    h2 { margin:0 0 15px; font-size:18px; }
+    h3 { margin:0 0 8px; font-size:15px; }
+    .subtitle { margin:0; color:var(--muted); max-width:760px; }
+    .badge { display:inline-flex; align-items:center; padding:5px 10px; border-radius:999px; background:#e6f5ef; color:#116b53; font-size:12px; white-space:nowrap; }
+    .layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(340px, .8fr); gap:18px; align-items:start; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:0 7px 24px rgba(30,55,75,.06); padding:20px; }
+    .section + .section { margin-top:22px; padding-top:20px; border-top:1px solid var(--line); }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px 15px; }
+    .grid.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    label { display:block; color:#31404c; font-weight:600; }
+    label span { display:block; margin-bottom:5px; }
+    input, select { width:100%; min-height:39px; padding:8px 10px; border:1px solid #cbd6df; border-radius:9px; background:#fff; color:var(--ink); font:inherit; }
+    input:focus, select:focus { outline:3px solid #cfe8fb; border-color:var(--blue); }
+    .hint { color:var(--muted); font-size:12px; font-weight:400; }
+    .mode-tabs { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:17px; }
+    .mode-tabs button { border:1px solid #cbd6df; background:#fff; color:#344653; border-radius:10px; padding:10px 6px; cursor:pointer; font:inherit; font-weight:600; }
+    .mode-tabs button.active { background:var(--blue); border-color:var(--blue); color:#fff; }
+    .actions { display:flex; gap:9px; margin-top:18px; flex-wrap:wrap; }
+    button.primary, button.secondary { border:0; border-radius:9px; padding:10px 15px; cursor:pointer; font:inherit; font-weight:700; }
+    button.primary { background:var(--blue); color:#fff; }
+    button.secondary { background:#eef3f7; color:#304452; }
+    .result-hero { background:linear-gradient(135deg,#0f5d91,#1987a7); color:white; border:0; }
+    .result-hero .eyebrow { opacity:.75; font-size:12px; }
+    .result-hero .big { font-size:34px; font-weight:750; letter-spacing:-.03em; margin:3px 0 2px; }
+    .result-hero .unit { opacity:.8; }
+    .metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-top:17px; }
+    .metric { border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.12); border-radius:10px; padding:10px; }
+    .metric .k { opacity:.72; font-size:12px; }
+    .metric .v { font-size:17px; font-weight:700; margin-top:3px; }
+    .formula { padding:12px; border-radius:10px; background:#f3f7fa; color:#334754; font-family:ui-monospace, SFMono-Regular, Consolas, monospace; font-size:12px; overflow:auto; }
+    .callout { border-left:4px solid #efa52d; background:#fff8e9; color:#704a00; padding:11px 13px; border-radius:8px; font-size:12px; }
+    .hidden { display:none !important; }
+    .status { margin-top:14px; color:var(--muted); font-size:12px; }
+    .table-wrap { overflow:auto; margin-top:15px; }
+    table { border-collapse:collapse; width:100%; min-width:620px; font-size:13px; }
+    th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { color:#50606c; font-size:12px; background:#f7fafc; }
+    .pill { display:inline-block; padding:2px 7px; border-radius:999px; background:var(--blue2); color:var(--blue); font-size:12px; }
+    footer { margin-top:18px; color:var(--muted); font-size:12px; }
+    @media (max-width: 850px) { .layout { grid-template-columns:1fr; } header { display:block; } .badge { margin-top:12px; } }
+    @media (max-width: 560px) { .grid, .grid.three { grid-template-columns:1fr; } .mode-tabs { grid-template-columns:repeat(2,1fr); } h1 { font-size:25px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <h1>环境测试条件换算工具</h1>
+        <p class="subtitle">输入实际使用场景与目标可靠性，按选定的加速模型估算测试条件、加速因子和所需测试时长。</p>
+      </div>
+      <span class="badge">工程估算 · 只读计算</span>
+    </header>
+
+    <div class="layout">
+      <section class="card">
+        <div class="section">
+          <h2>1. 选择试验类型</h2>
+          <div class="mode-tabs" role="tablist">
+            <button class="active" data-mode="tc">温度循环</button>
+            <button data-mode="thh">高温高湿</button>
+            <button data-mode="damp">交变湿热</button>
+            <button data-mode="hts">高温存储</button>
+            <button data-mode="lts">低温存储</button>
+          </div>
+          <div id="modeDescription" class="hint">使用 Coffin-Manson 热疲劳模型，并叠加平均温度 Arrhenius 项。输出测试循环数。</div>
+        </div>
+
+        <div class="section">
+          <h2>2. 实际使用场景</h2>
+          <div class="grid">
+            <label id="useTminField" class=""><span>使用温度下限（°C）</span><input id="useTmin" type="number" value="-10" step="0.1"></label>
+            <label id="useTmaxField" class=""><span>使用温度上限（°C）</span><input id="useTmax" type="number" value="40" step="0.1"></label>
+            <label id="useRhField" class="humidity-field hidden"><span>使用相对湿度（%RH）</span><input id="useRh" type="number" value="60" min="1" max="100" step="0.1"></label>
+            <label id="useLifeField" class=""><span>使用周期 / 时长</span><input id="useLife" type="number" value="3" min="0.01" step="0.1"></label>
+            <label id="useLifeUnitField" class=""><span id="useLifeUnitLabel">使用周期 / 时长单位</span><select id="useLifeUnit"><option value="years" selected="">年</option><option value="cycles">循环次数</option><option value="hours">小时</option><option value="days">天</option></select></label>
+            <label id="useFreqField" class=""><span>使用频率（次/小时）<em class="hint">温度循环用</em></span><input id="useFreq" type="number" value="1" min="0.0001" step="0.01"></label>
+          </div>
+          <div id="dampUse" class="grid hidden" style="margin-top:13px">
+            <label><span>使用低温（°C）</span><input id="useTlow" type="number" value="20" step="0.1"></label>
+            <label><span>使用高温（°C）</span><input id="useThigh" type="number" value="35" step="0.1"></label>
+            <label><span>使用低湿（%RH）</span><input id="useRhlow" type="number" value="40" min="1" max="100" step="0.1"></label>
+            <label><span>使用高湿（%RH）</span><input id="useRhhigh" type="number" value="85" min="1" max="100" step="0.1"></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>3. 目标测试条件</h2>
+          <div class="grid">
+            <label id="testTminField" class=""><span>测试温度下限（°C）</span><input id="testTmin" type="number" value="-40" step="0.1"></label>
+            <label id="testTmaxField" class=""><span>测试温度上限（°C）</span><input id="testTmax" type="number" value="85" step="0.1"></label>
+            <label id="testRhField" class="humidity-field hidden"><span>测试相对湿度（%RH）</span><input id="testRh" type="number" value="85" min="1" max="100" step="0.1"></label>
+            <label id="testLifeField" class="hidden"><span id="testLifeLabel">测试循环数（留空自动反推）</span><input id="testLife" type="number" value="168" min="0.01" step="0.1"></label>
+            <label id="testFreqField" class=""><span>测试频率（次/小时）<em class="hint">温度循环用</em></span><input id="testFreq" type="number" value="2" min="0.0001" step="0.01"></label>
+            <label id="samplesField" class=""><span>样本数</span><input id="samples" type="number" value="3" min="1" step="1"></label>
+          </div>
+          <div id="dampTest" class="grid hidden" style="margin-top:13px">
+            <label><span>测试低温（°C）</span><input id="testTlow" type="number" value="25" step="0.1"></label>
+            <label><span>测试高温（°C）</span><input id="testThigh" type="number" value="55" step="0.1"></label>
+            <label><span>测试低湿（%RH）</span><input id="testRhlow" type="number" value="75" min="1" max="100" step="0.1"></label>
+            <label><span>测试高湿（%RH）</span><input id="testRhhigh" type="number" value="95" min="1" max="100" step="0.1"></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>4. 模型参数与可靠性（可选）</h2>
+          <div class="grid three">
+            <label id="eaField" class=""><span>活化能 Ea（eV）<em class="hint">默认 0.70</em></span><input id="ea" type="number" value="0.70" min="0.01" step="0.01"></label>
+            <label id="rhExpField" class="hidden"><span>湿度指数 n<em class="hint">Peck 默认 2.70</em></span><input id="rhExp" type="number" value="2.70" min="0" step="0.1"></label>
+            <label id="cycleExpField" class=""><span>热循环指数 q<em class="hint">Coffin-Manson 默认 1.90</em></span><input id="cycleExp" type="number" value="1.90" min="0.1" step="0.1"></label>
+            <label id="reliabilityField" class=""><span>目标可靠度 R（%）</span><input id="reliability" type="number" value="90" min="0.01" max="99.99" step="0.1"></label>
+            <label id="confidenceField" class=""><span>置信度 C（%）</span><input id="confidence" type="number" value="90" min="0.01" max="99.99" step="0.1"></label>
+            <label id="failureModeField" class=""><span>失效假设 / 分布模型</span><select id="failureMode"><option value="exponential">指数分布（零失效）</option><option value="weibull">Weibull 分布（已知 β）</option><option value="lognormal">对数正态分布（需拟合）</option><option value="normal">正态分布（尺寸/漂移）</option><option value="none">不换算可靠度</option></select></label>
+            <label id="betaField" class="hidden"><span>Weibull 形状参数 β</span><input id="beta" type="number" value="1.50" min="0.1" step="0.1"></label>
+          </div>
+          <div id="failureInfo" class="callout" style="margin-top:10px">指数分布：适合随机、恒定失效率的早期电子故障或偶发故障。支持零失效可靠度演示，默认 β=1。</div>
+        </div>
+        <div class="actions"><button class="primary" id="calculate">计算测试条件</button><button class="secondary" id="reset">恢复示例参数</button></div>
+        <div id="status" class="status">已完成计算：2026/11/19 20:51:38</div>
+      </section>
+
+      <aside>
+        <section class="card result-hero">
+          <div class="eyebrow">计算得到的加速结果</div>
+          <div class="big" id="afValue">23.318×</div><div class="unit">加速因子 AF（相对使用场景）</div>
+          <div class="metrics">
+            <div class="metric"><div class="k">建议测试时长 / 循环数</div><div class="v" id="testValue">8,215.7 cycles</div></div>
+            <div class="metric"><div class="k">等效使用暴露</div><div class="v" id="equivValue">26,298 cycles</div></div>
+            <div class="metric"><div class="k">可靠度换算测试量</div><div class="v" id="reliabilityValue">191,575.19 cycles/样本</div></div>
+            <div class="metric"><div class="k">计算模型</div><div class="v" id="modelValue">Coffin-Manson + Arrhenius</div></div>
+          </div>
+        </section>
+        <section class="card" style="margin-top:18px"><h2>计算说明</h2><div id="formula" class="formula">AF = (ΔT_test / ΔT_use)^q × exp[Ea/k × (1/Tmean_use − 1/Tmean_test)] × (f_test/f_use)
+AF = (125/50)^1.9 × Arrhenius × 频率比</div><div id="recommendation" class="callout" style="margin-top:12px">指数分布零失效近似下，90% 可靠度 / 90% 置信度：每个样本需承担 191,575.19 cycles 的等效使用暴露，已按 AF=23.318 折算到测试侧。</div></section>
+        <section class="card" style="margin-top:18px"><h2>结果记录</h2><div class="table-wrap"><table><thead><tr><th>时间</th><th>类型</th><th>AF</th><th>测试量</th></tr></thead><tbody id="history"><tr><td>2026/11/19 20:51:38</td><td><span class="pill">温度循环</span></td><td>23.318×</td><td>8,215.7 cycles</td></tr><tr><td>2026/11/19 20:34:21</td><td><span class="pill">温度循环</span></td><td>23.318×</td><td>8,215.7 cycles</td></tr></tbody></table></div><button class="secondary" id="clearHistory" style="margin-top:12px">清空记录</button></section>
+      </aside>
+    </div>
+    <footer>模型边界：Peck（高温高湿/交变湿热）、Arrhenius（高温/低温存储）、Coffin-Manson + Arrhenius（温度循环）。工具不会替代 IEC 60068、GB/T 2423 或产品专用规范。</footer>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const K = 8.617333262e-5;
+    const modes = {
+      tc: {name:'温度循环', desc:'使用 Coffin-Manson 热疲劳模型，并叠加平均温度 Arrhenius 项。输出测试循环数。'},
+      thh: {name:'高温高湿', desc:'使用 Peck 模型：温度 Arrhenius 项 + 相对湿度指数项。输出测试小时数。'},
+      damp: {name:'交变湿热', desc:'对低/高温湿两段分别计算 Peck 损伤率，再用时间平均损伤率求等效加速因子。'},
+      hts: {name:'高温存储', desc:'使用 Arrhenius 模型。适用于主要由温度驱动的热激活失效。'},
+      lts: {name:'低温存储', desc:'使用低温 Arrhenius 外推。低温脆化、黏弹性变化等非热激活失效需单独建模。'}
+    };
+    let mode = 'tc';
+    const val = id => Number($(id).value);
+    const fmt = (n, digits=2) => Number.isFinite(n) ? n.toLocaleString('zh-CN',{maximumFractionDigits:digits}) : '—';
+    const c2k = c => c + 273.15;
+    const positive = (n, fallback=1) => Number.isFinite(n) && n > 0 ? n : fallback;
+    function applyVisibility() {
+      const fields = ['useTminField','useTmaxField','useRhField','useLifeField','useLifeUnitField','useFreqField','testTminField','testTmaxField','testRhField','testLifeField','testFreqField','samplesField','eaField','rhExpField','cycleExpField','reliabilityField','confidenceField','failureModeField','betaField'];
+      fields.forEach(id => $(id).classList.add('hidden'));
+      const show = ids => ids.forEach(id => $(id).classList.remove('hidden'));
+      // 可靠度/置信度是所有试验的可选项；测试时长输入由工具反推，因此不展示 testLife。
+      show(['useLifeField','useLifeUnitField','samplesField','reliabilityField','confidenceField','failureModeField','eaField']);
+      if (mode === 'tc') {
+        show(['useTminField','useTmaxField','useFreqField','testTminField','testTmaxField','testFreqField','cycleExpField']);
+      } else if (mode === 'thh') {
+        show(['useTminField','useTmaxField','useRhField','testTminField','testTmaxField','testRhField','rhExpField']);
+      } else if (mode === 'damp') {
+        show(['rhExpField']);
+      } else if (mode === 'hts') {
+        show(['useTminField','useTmaxField','testTmaxField']);
+      } else if (mode === 'lts') {
+        show(['useTminField','useTmaxField','testTminField']);
+      }
+      const damp = mode === 'damp';
+      ['dampUse','dampTest'].forEach(id => $(id).classList.toggle('hidden', !damp));
+      document.querySelectorAll('.humidity-field').forEach(e => e.classList.toggle('hidden', mode==='tc'||mode==='hts'||mode==='lts'||mode==='damp'));
+      updateFailureInfo();
+    }
+    function setMode(next) {
+      mode = next;
+      document.querySelectorAll('.mode-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+      $('modeDescription').textContent = modes[mode].desc;
+      applyVisibility();
+      $('useLifeUnitLabel').textContent = mode === 'tc' ? '使用周期 / 时长单位' : '使用寿命单位';
+      $('testLifeLabel').textContent = mode === 'tc' ? '测试循环数（留空自动反推）' : '测试时长（小时）';
+      calculate();
+    }
+    function thermalRate(t, rh, ea, n) { return Math.pow(Math.max(rh,1)/100,n) * Math.exp(-ea/(K*c2k(t))); }
+    function peckAF(useT,useRh,testT,testRh,ea,n) { return thermalRate(testT,testRh,ea,n) / thermalRate(useT,useRh,ea,n); }
+    function arrheniusAF(useT,testT,ea) { return Math.exp(ea/K * (1/c2k(useT) - 1/c2k(testT))); }
+    function reliabilityExposure(R,C) { return Math.log(1-C) / Math.log(R); }
+    function updateFailureInfo() {
+      const kind = $('failureMode').value;
+      $('betaField').classList.toggle('hidden', kind !== 'weibull');
+      const info = {
+        exponential: '指数分布：适合随机、恒定失效率的早期电子故障或偶发故障。支持零失效可靠度演示，默认 β=1。',
+        weibull: 'Weibull：适合寿命随时间变化的早期失效、随机失效或磨损失效。β<1 表示早期失效，β≈1 表示随机失效，β>1 表示磨损老化。当前按已知 β 的零失效近似换算。',
+        lognormal: '对数正态：适合疲劳、腐蚀、扩散、绝缘老化等寿命右偏分布。需要实测失效时间拟合 μ、σ；本工具不使用零失效公式自动反推测试量。',
+        normal: '正态分布：适合尺寸、性能漂移、测量误差等近似对称的连续指标，不适合直接描述“失效时间”。需要均值、标准差和规格限数据。',
+        none: '不换算可靠度：只按加速模型计算测试时长或循环数，不进行可靠度/置信度演示。'
+      };
+      $('failureInfo').textContent = info[kind];
+    }
+    function calculate() {
+      try {
+        const ea=positive(val('ea'),.7), n=Math.max(0,val('rhExp')), q=positive(val('cycleExp'),1.9);
+        const R=Math.min(.9999,Math.max(.0001,val('reliability')/100)), C=Math.min(.9999,Math.max(.0001,val('confidence')/100));
+        const life=positive(val('useLife'),1), samples=Math.max(1,Math.round(val('samples')));
+        const lifeUnit=$('useLifeUnit').value;
+        const useFreq=positive(val('useFreq'),1);
+        const lifeHours=lifeUnit==='years' ? life*365.25*24 : lifeUnit==='days' ? life*24 : lifeUnit==='cycles' ? life/useFreq : life;
+        const missionCycles=lifeUnit==='cycles' ? life : lifeHours*useFreq;
+        let af=1, testAmount=0, equiv=0, model=''; let formula=''; let unit='小时';
+        if(mode==='tc') {
+          const useMin=val('useTmin'),useMax=val('useTmax'),testMin=val('testTmin'),testMax=val('testTmax');
+          const du=Math.max(.01,useMax-useMin), dt=Math.max(.01,testMax-testMin);
+          const meanU=(useMin+useMax)/2, meanT=(testMin+testMax)/2;
+          af=Math.pow(dt/du,q)*arrheniusAF(meanU,meanT,ea)*positive(val('testFreq'),1)/positive(val('useFreq'),1);
+          const requestedCycles = missionCycles;
+          testAmount=requestedCycles/af;
+          equiv=fmt(requestedCycles,1)+' cycles'; unit='cycles'; model='Coffin-Manson + Arrhenius';
+          formula=`AF = (ΔT_test / ΔT_use)^q × exp[Ea/k × (1/Tmean_use − 1/Tmean_test)] × (f_test/f_use)\nAF = (${fmt(dt)}/${fmt(du)})^${fmt(q)} × Arrhenius × 频率比`;
+        } else if(mode==='damp') {
+          const use1=thermalRate(val('useTlow'),val('useRhlow'),ea,n), use2=thermalRate(val('useThigh'),val('useRhhigh'),ea,n);
+          const test1=thermalRate(val('testTlow'),val('testRhlow'),ea,n), test2=thermalRate(val('testThigh'),val('testRhhigh'),ea,n);
+          af=((test1+test2)/2)/((use1+use2)/2); testAmount=lifeHours/af; equiv=fmt(lifeHours,1)+' h'; model='Peck（两段时间平均）';
+          formula=`AF = mean[Peck(test低温/低湿), Peck(test高温/高湿)] / mean[Peck(use低温/低湿), Peck(use高温/高湿)]`;
+        } else if(mode==='thh') {
+          const useT=(val('useTmin')+val('useTmax'))/2, testT=(val('testTmin')+val('testTmax'))/2;
+          af=peckAF(useT,val('useRh'),testT,val('testRh'),ea,n); testAmount=lifeHours/af; equiv=fmt(lifeHours,1)+' h'; model='Peck';
+          formula=`AF = (RH_test/RH_use)^n × exp[Ea/k × (1/T_use − 1/T_test)]\nAF = (${fmt(val('testRh'))}/${fmt(val('useRh'))})^${fmt(n)} × Arrhenius`;
+        } else if(mode==='hts') {
+          const useT=(val('useTmin')+val('useTmax'))/2, testT=val('testTmax');
+          af=arrheniusAF(useT,testT,ea); testAmount=lifeHours/af; equiv=fmt(lifeHours,1)+' h'; model='Arrhenius（高温）';
+          formula=`AF = exp[Ea/k × (1/T_use − 1/T_test)]`;
+        } else {
+          const useT=(val('useTmin')+val('useTmax'))/2, testT=val('testTmin');
+          af=arrheniusAF(testT,useT,ea); testAmount=lifeHours/af; equiv=fmt(lifeHours,1)+' h'; model='Arrhenius（低温外推）';
+          formula=`AF = exp[Ea/k × (1/T_test − 1/T_use)]（低温经验外推）`;
+        }
+        if(!Number.isFinite(af) || af<=0) throw new Error('请检查温度、湿度和模型参数。');
+        const failureMode = $('failureMode').value;
+        const baseExp = reliabilityExposure(R,C);
+        let reqExp = null;
+        if (failureMode === 'exponential') reqExp = baseExp;
+        if (failureMode === 'weibull') reqExp = Math.pow(baseExp, 1/positive(val('beta'),1.5));
+        // 零失效指数模型：总等效暴露 = ln(1-C)/ln(R) ×任务期；Weibull 在已知 β 时做形状修正。
+        if(reqExp) testAmount = reqExp * (mode==='tc' ? missionCycles : lifeHours) / samples / af;
+        const reliabilityAmount = reqExp ? `${fmt(reqExp*(mode==='tc' ? missionCycles : lifeHours)/samples,2)} ${unit}/样本` : (failureMode==='lognormal'||failureMode==='normal' ? '需实测数据拟合' : '未启用');
+        $('afValue').textContent=fmt(af,3)+'×';
+        $('testValue').textContent=mode==='tc' ? `${fmt(testAmount,1)} cycles` : `${fmt(testAmount,1)} h`;
+        $('equivValue').textContent=typeof equiv==='string'?equiv:fmt(equiv);
+        $('reliabilityValue').textContent=reliabilityAmount;
+        $('modelValue').textContent=model;
+        $('formula').textContent=formula;
+        $('recommendation').textContent = reqExp ? `${failureMode==='weibull'?'Weibull':'指数分布'}零失效近似下，${fmt(val('reliability'),2)}% 可靠度 / ${fmt(val('confidence'),2)}% 置信度：每个样本需承担 ${fmt(reqExp*(mode==='tc' ? missionCycles : lifeHours)/samples,2)} ${unit} 的等效使用暴露，已按 AF=${fmt(af,3)} 折算到测试侧。` : (failureMode==='lognormal'||failureMode==='normal' ? '当前分布需要实测失效数据、均值/标准差或参数拟合结果，工具仅展示加速模型结果。' : '未启用可靠度换算；当前结果仅按加速因子折算。');
+        $('status').textContent='已完成计算：'+new Date().toLocaleString('zh-CN');
+        addHistory({type:modes[mode].name,af,test: $('testValue').textContent});
+      } catch(e) { $('status').textContent='输入错误：'+e.message; }
+    }
+    function addHistory(x) { const key='env-test-history'; const arr=JSON.parse(localStorage.getItem(key)||'[]'); const sig=JSON.stringify(x); if(arr[0]&&JSON.stringify({...arr[0],type:x.type,af:x.af,test:x.test})===sig) return; arr.unshift({time:new Date().toLocaleString('zh-CN'),...x}); localStorage.setItem(key,JSON.stringify(arr.slice(0,10))); renderHistory(); }
+    function renderHistory() { const arr=JSON.parse(localStorage.getItem('env-test-history')||'[]'); $('history').innerHTML=arr.map(x=>`<tr><td>${x.time}</td><td><span class="pill">${x.type}</span></td><td>${fmt(x.af,3)}×</td><td>${x.test}</td></tr>`).join('') || '<tr><td colspan="4" class="hint">尚无记录</td></tr>'; }
+    function reset() { ['useTmin','useTmax','useRh','useLife','useFreq','testTmin','testTmax','testRh','testLife','testFreq','samples','ea','rhExp','cycleExp','reliability','confidence','useTlow','useThigh','useRhlow','useRhhigh','testTlow','testThigh','testRhlow','testRhhigh','beta'].forEach(id=>$(id).value={useTmin:-10,useTmax:40,useRh:60,useLife:3,useFreq:1,testTmin:-40,testTmax:85,testRh:85,testLife:168,testFreq:2,samples:3,ea:.7,rhExp:2.7,cycleExp:1.9,reliability:90,confidence:90,useTlow:20,useThigh:35,useRhlow:40,useRhhigh:85,testTlow:25,testThigh:55,testRhlow:75,testRhhigh:95,beta:1.5}[id]); $('useLifeUnit').value='years'; $('failureMode').value='exponential'; setMode('tc'); }
+    document.querySelectorAll('.mode-tabs button').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+    $('calculate').addEventListener('click',calculate); $('reset').addEventListener('click',reset); $('clearHistory').addEventListener('click',()=>{localStorage.removeItem('env-test-history');renderHistory();});
+    document.querySelectorAll('input,select').forEach(e=>e.addEventListener('change',()=>{ if(e.id==='failureMode') updateFailureInfo(); calculate(); }));
+    setMode('tc'); renderHistory();
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  </script>
+
+
+</body><div id="codex-browser-sidebar-comments-root" style="position: fixed; inset: 0px; pointer-events: none; z-index: 2147483647;"></div></html>
