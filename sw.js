@@ -1,8 +1,8 @@
 const CACHE = 'env-test-converter-v1';
 const ASSETS = [
-  '/environment-test-converter.html',
-  '/manifest.webmanifest',
-  '/sw.js'
+  './environment-test-converter.html',
+  './manifest.webmanifest',
+  './sw.js'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
