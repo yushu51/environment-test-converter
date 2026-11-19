@@ -1,0 +1,11 @@
+{
+  "name": "环境测试条件换算工具",
+  "short_name": "环境测试换算",
+  "description": "根据实际使用场景换算环境可靠性测试条件",
+  "lang": "zh-CN",
+  "start_url": "/environment-test-converter.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#1769aa"
+}
